@@ -23,7 +23,6 @@ class Entry:
                               ( .* ) $                 # capture comment''',
                           line, re.X)
         if parsed:
-            print(parsed, parsed.groups(default=''), file=sys.stderr)  # TODO delete me
             self.is_entry = True
             groups = parsed.groups(default='')
             groups = [re.sub('%(.)', r'\1', elem) for elem in groups]
