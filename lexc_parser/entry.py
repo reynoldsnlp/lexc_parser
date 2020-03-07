@@ -1,32 +1,42 @@
 import re
 import warnings
-import sys
-
 from .lexicon import _lexicons
+from .misc import escape
+from .misc import unescape
 
 __all__ = ['Entry']
 
 
 class Entry:
     def __init__(self, line):
-        line = line.rstrip()
-        parsed = re.match(r'''( (?: %. | [^:] )+ )     # capture upper
-                              (?: :                    # colon delimiter
-                                  ( (?: %. | [^ ] )+ ) # capture lower
-                              )?                       # :lower is optional
-                              \ +                      # space delimiter(s)
-                              ( (?: %. | [^ ;] )+ )    # capture cont class
-                              (?: \ "                  # open gloss
-                                  ( (?: %. | [^"] )+ ) # capture gloss
-                              ")?                      # close gloss
-                              \ +;                     # space delimiter(s)
-                              ( .* ) $                 # capture comment''',
+        parsed = re.match(r'''\s*(?:                      # open upper
+                                  ( (?: %. | [^ \t:] )+ | # capture upper...
+                                   < (?: %. | [^>] )+ > ) # ... or regex
+                              )?                          # upper is optional
+                              (?: :                     # colon delim for lower
+                                  ( (?: %. | [^ \t] )+ )  # capture lower
+                              )?                          # :lower is optional
+                              [ \t]+                      # space delimiter(s)
+                              ( (?: %. | [^ ;] )+ )       # capture cont class
+                              (?: [ \t]+"                 # open gloss
+                                  ( (?: %. | [^"] )+ )    # capture gloss
+                              ")?                         # close gloss
+                              [ \t]+;                     # space delimiter(s)
+                              ( .*? ) \s* $               # capture comment''',
                           line, re.X)
         if parsed:
             self.is_entry = True
             groups = parsed.groups(default='')
-            groups = [re.sub('%(.)', r'\1', elem) for elem in groups]
             self.upper, self.lower, self.cc, self.gloss, self.comment = groups
+            if re.match(r'<(?:%.|[^>])+>', self.upper):
+                self.regex = True
+            else:
+                self.regex = False
+                self.upper = unescape(self.upper)
+            self.lower = unescape(self.lower)
+            assert (self.upper and self.lower and self.cc  # upper:lower entry
+                    or self.upper and not self.lower and self.cc  # simple string entry or xfst regex  # noqa: E501
+                    or not self.upper and not self.lower and self.cc), f'bad entry: {line!r}'  # empty data entry  # noqa: E501
             if self.cc.isspace():
                 warnings.warn(f'bad cont class: {line!r}',
                               category=SyntaxWarning)
@@ -48,23 +58,16 @@ class Entry:
         return f'LexiconLine(upper={self.upper}, lower={self.lower}, cc={self.cc}, gloss={self.gloss}, comment={self.comment}'  # noqa: E501
 
     def __str__(self):
-        if self.lower:
-            colon = ':'
-        else:
-            colon = ''
-        if self.cc:
-            space = ' '
-            semi = ' ;'
-        else:
-            space = ''
-            semi = ''
-        if self.gloss:
-            q1 = ' "'
-            q2 = '"'
-        else:
-            q1 = ''
-            q2 = ''
-        return f'{self.upper}{colon}{self.lower}{space}{self.cc}{q1}{self.gloss}{q2}{semi}{self.comment}'  # noqa: E501
+        return (f'{escape(self.upper) if not self.regex else self.upper}'
+                f'{":" if self.lower else ""}'
+                f'{escape(self.lower)}'
+                '{" " if self.cc else ""}'
+                f'{self.cc}'  # TODO escape() this?
+                f'''{' "' if self.gloss else ''}'''
+                f'{self.gloss}'  # TODO escape() this?
+                f'''{'"' if self.gloss else ''}'''
+                f'{" ;" if self.cc else ""}'
+                f'{self.comment}')
 
     def is_comment(self):
         """Return whether comment is the only attribute with a truthy value."""
