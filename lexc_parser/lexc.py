@@ -37,7 +37,7 @@ class Lexc:
                           category=SyntaxWarning)
         self.multichar_symbols = MulticharSymbols(multichar_symbols)
         self.lexicons = []
-        for lexicon_str in re.split(r'(?<=\n)LEXICON', lexicons):
+        for lexicon_str in re.split(r'^LEXICON', lexicons, flags=re.M):
             if lexicon_str:
                 lex = Lexicon('LEXICON' + lexicon_str)
                 self.lexicons.append(lex)
