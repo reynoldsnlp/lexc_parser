@@ -6,7 +6,7 @@ __all__ = ['escape', 'unescape']
 
 def unescape(in_str):
     """Unescape all characters preceded by `%`."""
-    return re.sub('%(.)', r'\1', in_str, re.MULTILINE)
+    return re.sub('%(.)', r'\1', in_str, flags=re.MULTILINE)
 
 
 def escape(in_str):
