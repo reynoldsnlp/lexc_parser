@@ -1,18 +1,22 @@
-from collections import defaultdict
+import re
+
+from .entry import Entry
+
+__all__ = ['Lexicon']
+NEWLINE = '\n'
 
 
-class keydefaultdict(defaultdict):
-    """defaultdict that uses key to produce the default value."""
-    def __missing__(self, key):
-        if self.default_factory is None:
-            raise KeyError(key)
-        else:
-            ret = self[key] = self.default_factory(key)
-            return ret
+class Lexicon:
+    def __init__(self, lex: str):
+        lines = lex.split('\n')
+        first_line = re.search(r'LEXICON\s+((?:%.|[^ \t!])+)\s*(.*)$',
+                               lines[0])
+        self.id, self.comment = first_line.groups(default='')  # type: ignore
+        self.entries = [Entry(line) for line in lines[1:]]
 
+    def __repr__(self):
+        return f'Lexicon(id={self.id}, entries={len(self.entries)})'
 
-def identity(x):
-    return x
-
-
-_lexicons = keydefaultdict(identity)
+    def __str__(self):
+        str_entries = [f'{e!s}' for e in self.entries]
+        return f'LEXICON {self.id}{NEWLINE}{NEWLINE.join(str_entries)}'

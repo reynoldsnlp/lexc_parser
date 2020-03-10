@@ -1,6 +1,5 @@
 import re
 import warnings
-from .lexicon import _lexicons
 from .misc import escape
 from .misc import unescape
 
@@ -40,7 +39,6 @@ class Entry:
             if self.cc.isspace():
                 warnings.warn(f'bad cont class: {line!r}',
                               category=SyntaxWarning)
-            self.cc = _lexicons[self.cc]
             if re.match(r'\s+', self.comment):
                 self.comment = ''
             elif self.comment != '' and not re.match(r'\s*!', self.comment):
@@ -48,9 +46,10 @@ class Entry:
                               category=SyntaxWarning)
         else:
             self.is_entry = False
+            self.regex = False
             self.upper, self.lower, self.cc, self.gloss = '', '', '', ''
             self.comment = line
-            if not re.match(r'\s*!', line):
+            if not re.match(r'\s*(?:!)?', line):
                 warnings.warn(f'bad line: {self.comment}',
                               category=SyntaxWarning)
 
@@ -61,7 +60,7 @@ class Entry:
         return (f'{escape(self.upper) if not self.regex else self.upper}'
                 f'{":" if self.lower else ""}'
                 f'{escape(self.lower)}'
-                '{" " if self.cc else ""}'
+                f'{" " if self.cc else ""}'
                 f'{self.cc}'  # TODO escape() this?
                 f'''{' "' if self.gloss else ''}'''
                 f'{self.gloss}'  # TODO escape() this?

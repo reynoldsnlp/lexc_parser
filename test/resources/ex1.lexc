@@ -1,0 +1,62 @@
+! Comments begin with !
+
+! Multichar_Symbols (separated by whitespace, terminated by first declared LEXICON)
+Multichar_Symbols +A +N +V  ! +A is adjectives, +N is nouns, +V is verbs
++Adv  ! This one is for adverbs
++Punc ! punctuation
+! +Cmpar ! This is broken for now, so I commented it out.
+
+! The bulk of lexc is made of up LEXICONs, which contain entries that point to
+! other LEXICONs. "Root" is a reserved lexicon name, and the start state.
+! "#" is also a reserved lexicon name, and the end state.
+
+LEXICON Root  ! Root is a reserved lexicon name, if it is not declared, then the first LEXICON is assumed to be the root
+big Adj ;  ! This 
+bigly Adv ;  ! Not sure if this is a real word...
+dog Noun ;
+cat Noun ;
+crow Noun ;
+crow Verb ;
+Num ;        ! This continuation class generates numbers using xfst-style regex
+
+! NB all the following are reserved characters
+
+sour% cream Noun ;  ! escaped space
+%: Punctuation ;    ! escaped :
+%; Punctuation ;    ! escaped ;
+%# Punctuation ;    ! escaped #
+%! Punctuation ;    ! escaped !
+%% Punctuation ;    ! escaped %
+%< Punctuation ;    ! escaped <
+%> Punctuation ;    ! escaped >
+
+%:%:%::%: # ; ! Should map ::: to :
+
+LEXICON Adj
++A: # ;      ! # is a reserved lexicon name which means end-of-word (final state).
+! +Cmpar:er # ;  ! Broken, so I commented it out.
+
+LEXICON Adv
++Adv: # ;
+
+LEXICON Noun
++N+Sg: # ;
++N+Pl:s # ;
+
+LEXICON Num_start
+<[0|1|2|3|4|5|6|7|8|9]> Num ; ! This is an xfst regular expression
+
+LEXICON Num
+<[0|1|2|3|4|5|6|7|8|9]> Num ; ! This is an xfst regular expression and a cyclic continuation
+# ;
+
+LEXICON Verb
++V+Inf: # ;
++V+Pres:s # ;
+
+LEXICON Punctuation
++Punc: # ;
+
+END
+
+This text is ignored because it is after END

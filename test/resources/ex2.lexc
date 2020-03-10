@@ -1,0 +1,28 @@
+LEXICON Root  ! Root is a reserved lexicon name, if it is not declared, then the first LEXICON is assumed to be the root
+! Each LEXICON contains at least one entry, which is minimally a continuation to
+! a LEXICON, but usually also includes "data"
+! A minimal entry is: continuation ;
+big Adj ;           ! upper='big'           lower='big'         cc='Adj'
+bigly Adv ;         ! upper='bigly'         lower='bigly'       cc='Adv'
+dog Noun ;          ! upper='dog'           lower='dog'         cc='Noun'
+crow Noun ;         ! upper='crow'          lower='crow'        cc='Noun'
+crow Verb ;         ! upper='crow'          lower='crow'        cc='Verb'
+Num ;               ! upper=''              lower=''            cc='Num'
+<[1|2|3]+> Num ;    ! upper=Regex('[1|2|3]+') lower=Regex('[1|2|3]+') cc='Num'
+be: Verb_be ;       ! upper='be'            lower=''            cc='Verb_be'
+sour% cream Noun ;  ! upper='sour cream'    lower='sour cream'  cc='Noun'
+%: Punctuation ;    ! upper=':'             lower=':'           cc='Punctuation'
+%; Punctuation ;    ! upper=';'             lower=';'           cc='Punctuation'
+%# Punctuation ;    ! upper='#'             lower='#'           cc='Punctuation'
+%! Punctuation ;    ! upper='!'             lower='!'           cc='Punctuation'
+%% Punctuation ;    ! upper='%'             lower='%'           cc='Punctuation'
+%< Punctuation ;    ! upper='<'             lower='<'           cc='Punctuation'
+%> Punctuation ;    ! upper='>'             lower='>'           cc='Punctuation'
+%:%:%::%: # ;       ! upper=':::'           lower=':'           cc='#'
+%%%%%::%# # ;       ! upper='%%:'           lower='#'           cc='#'
+
+LEXICON Adj ;
++Adj: # ;
+
+LEXICON Num
++Num: # ;           ! upper='+Num'          lower=''            cc='#'
