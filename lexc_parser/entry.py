@@ -128,11 +128,8 @@ class Entry:
         parsed = re.match(all_re, line, re.X)
         if parsed:
             groups = [g or None for g in parsed.groups() if g is not None]
-            print('_parse_entry:', repr(line), parsed.groups(), groups,
-                  file=sys.stderr)
             return groups
         else:
-            print('_parse_entry:', repr(line), repr(None), file=sys.stderr)
             return None
 
     def expand_upper(self, tag_delim='+'):
