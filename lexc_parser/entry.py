@@ -79,13 +79,13 @@ class Entry:
     @staticmethod
     def _parse_entry(line):
         upper_lower_re = r'''(?:                         # open full-spec data
-                             ( (?: %. | [^:] )+ )        # capture upper
-                             ( : (?: %. | [^ \t] )* )    # capture lower
+                             ( (?: %. | [^:!] )+ )       # capture upper
+                             ( : (?: %. | [^ \t!] )* )   # capture lower
                              [ \t]+                      # space delimiter(s)
                              )                           # close full-spec data
                              '''
         upper_re = r'''(?:                         # open simple data
-                       ( (?: %. | [^ \t:] )+ |     # capture upper...
+                       ( (?: %. | [^ \t:!] )+ |    # capture upper...
                          < (?: %. | [^>] )+ > )    # ... or regex
                        ()                          # capture lower
                        [ \t]+                      # space delimiter(s)
@@ -101,7 +101,7 @@ class Entry:
                         )                           # close data
                         '''
         cc_re = r'''(?:                           # open cc
-                         ( (?: %. | [^ \t] )+ )   # capture cont class
+                         ( (?: %. | [^ \t!] )+ )  # capture cont class
                          [ \t]+                   # space delimiter(s)
                       )                           # close cc
                     '''
