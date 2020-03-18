@@ -14,4 +14,4 @@ m = '''Multichar_Symbols +A +N +V  ! +A is adjectives, +N is nouns, +V is verbs
 
 def test_multichar_symbols():
     multichar = MulticharSymbols(m)
-    assert repr(multichar) == 'MulticharSymbols(12 symbols, 10 lines)'
+    assert repr(multichar) == 'MulticharSymbols(5 symbols, 10 lines)'

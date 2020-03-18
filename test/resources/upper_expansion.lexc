@@ -1,0 +1,17 @@
+LEXICON Root
+! This is just a comment, not an entry
+Boris Male ;
+Vladimir Male ;
+
+LEXICON Male
+ProperNoun ;
+ov Pat ;
+
+LEXICON Pat
+ic+Msc:ic ProperNoun ;
+na+Fem:na ProperNoun ;
+
+LEXICON ProperNoun
++N+Prop: # ;
+
+END
