@@ -57,7 +57,7 @@ def test_str():
     assert str(lp.Entry('c ;  ')) == 'c ;'
     assert str(lp.Entry('c ;')) == 'c ;'
     assert str(lp.Entry('< a b* c+ (d)) > c ;\n')) == '< a b* c+ (d)) > c ;'
-    assert str(lp.Entry('< a b* %> c (d)) > c ;\n')) == '< a b* %> c (d)) > c ;'
+    assert str(lp.Entry('< a b* %> c (d)) > c ;')) == '< a b* %> c (d)) > c ;'
     assert str(lp.Entry('Boris Male ;')) == 'Boris Male ;'
     assert str(lp.Entry('Vladimir Male ;')) == 'Vladimir Male ;'
     assert str(lp.Entry('ProperNoun ;')) == 'ProperNoun ;'

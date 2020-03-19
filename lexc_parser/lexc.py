@@ -75,7 +75,7 @@ class Lexc:
                                     for lex in self._lex_dict.values()),
                         self.end])
 
-    def upper_expansions(self, *, cc=None, entry=None, suffix_list=None,
+    def upper_expansions(self, *, cc=None, entry=None, suffixes=None,
                          tag_delim='+', cc_history=None, max_cycles=0):
         """Expand all uppers in `cc` according to subsequent
         continuation classes. Especially useful for extracting lemmas.
@@ -87,48 +87,46 @@ class Lexc:
         if cc_history is None:
             cc_history = Counter(['Root'])
 
-        if cc is not None and entry is None and suffix_list is None:
+        if cc is not None and entry is None and suffixes is None:
             cc_history.update([cc.id])
             if cc.id in self._upper_expansion_cache:
                 expansions = self._upper_expansion_cache[cc.id]
                 return expansions
             else:
-                suffix_list = ['']
-                expansions = []
+                suffixes = {''}
+                expansions = set()
                 for each_entry in cc:
                     if each_entry.cc:
                         if (each_entry.cc.id not in cc_history
                                 or cc_history[each_entry.cc.id] < max_cycles):
                             x = self.upper_expansions(entry=each_entry,
-                                                      suffix_list=suffix_list,
+                                                      suffixes=suffixes,
                                                       tag_delim=tag_delim,
                                                       cc_history=Counter(cc_history),  # noqa: E501
                                                       max_cycles=max_cycles)
-                            expansions.extend(x)
+                            expansions.update(x)
                 self._upper_expansion_cache[cc.id] = expansions
                 return expansions
-        elif cc is None and entry is not None and suffix_list is not None:
+        elif cc is None and entry is not None and suffixes is not None:
             if entry.upper is None:
                 upper = ''
             else:
                 upper = entry.upper.split(tag_delim)[0]
-            suffix_list = [f'{lem}{upper}' for lem in suffix_list]
-            if not entry.cc:
-                pass
-            elif entry.cc.id == '#' or (entry.upper is not None
-                                        and tag_delim in entry.upper):
-                return suffix_list
+            suffixes = {f'{lem}{upper}' for lem in suffixes}
+            if entry.cc.id == '#' or (entry.upper is not None
+                                      and tag_delim in entry.upper):
+                return suffixes
             else:
                 expansions = self.upper_expansions(cc=entry.cc,
                                                    tag_delim=tag_delim,
                                                    cc_history=Counter(cc_history),  # noqa: E501
                                                    max_cycles=max_cycles)
-                suffix_list = [f'{lem}{suffix}' for lem in suffix_list
-                               for suffix in expansions]
-                return suffix_list
+                suffixes = {f'{lem}{suffix}' for lem in suffixes
+                            for suffix in expansions}
+                return suffixes
         else:
             raise ValueError('upper_expansions accepts cc or entry, not both. '
-                             f'cc: {cc}, entry: {entry}, suffix_list: '
-                             f'{suffix_list}, tag_delim: {tag_delim}, '
+                             f'cc: {cc}, entry: {entry}, suffixes: '
+                             f'{suffixes}, tag_delim: {tag_delim}, '
                              f'cc_history: {cc_history}, '
                              f'max_cycles: {max_cycles}')
