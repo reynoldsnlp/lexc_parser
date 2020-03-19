@@ -1,12 +1,22 @@
 import re
+from typing import List
+from typing import TYPE_CHECKING
 
 from .entry import Entry
+if TYPE_CHECKING:
+    from .lexc import Lexc
 
 __all__ = ['Lexicon']
 NEWLINE = '\n'
 
 
 class Lexicon:
+    __slots__ = ['comment', 'entries', 'id', 'parent_lexc']
+    comment: str
+    entries: List[Entry]
+    id: str
+    parent_lexc: 'Lexc'
+
     def __init__(self, lex: str, parent_lexc=None):
         self.parent_lexc = parent_lexc
         lines = lex.split('\n')

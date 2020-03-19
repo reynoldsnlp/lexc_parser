@@ -1,7 +1,8 @@
 LEXICON Root
 ! This is just a comment, not an entry
 Boris Male ;
-Vladimir Male ;
+Bo% ris:Bo% ris Male ;
+Vladimir:Volodimir Male ;
 ! 
 
 LEXICON Male
@@ -14,5 +15,6 @@ na+Fem:na ProperNoun ;
 
 LEXICON ProperNoun
 +N+Prop: # ;
+Test Male ;  ! Cyclic cc
 
 END

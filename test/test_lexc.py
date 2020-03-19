@@ -11,7 +11,7 @@ with open(expansion_name) as f:
 
 def test_expansion():
     lexc = lp.Lexc(expansion_str)
-    print(repr(lexc), lexc.multichar_symbols.symbols, lexc, file=sys.stderr)
     assert set(lexc.upper_expansions()) == {'Boris', 'Borisovic', 'Borisovna',
-                                            'Vladimir', 'Vladimirovic',
-                                            'Vladimirovna'}
+                                            'Bo ris', 'Bo risovic',
+                                            'Bo risovna', 'Vladimir',
+                                            'Vladimirovic', 'Vladimirovna'}

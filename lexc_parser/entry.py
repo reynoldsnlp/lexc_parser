@@ -1,14 +1,30 @@
 import re
-import sys
+from typing import Union
+from typing import TYPE_CHECKING
 import warnings
 
 from .misc import escape
 from .misc import unescape
 
+if TYPE_CHECKING:
+    from .lexicon import Lexicon
+
 __all__ = ['Entry']
 
 
 class Entry:
+    __slots__ = ['cc', 'comment', 'gloss', 'is_comment', 'is_entry',
+                 'is_regex', 'lower', 'parent_lexc', 'parent_lexicon', 'upper']
+    cc: 'Union[str, Lexicon]'
+    comment: str
+    gloss: str
+    is_comment: bool
+    is_entry: bool
+    is_regex: bool
+    lower: str
+    parent_lexicon: 'Lexicon'
+    upper: str
+
     def __init__(self, line, parent_lexicon=None):
         parsed = self._parse_entry(line)
         if parsed:
@@ -16,9 +32,9 @@ class Entry:
             self.is_comment = False
             self.upper, self.lower, self.cc, self.gloss, self.comment = parsed
             if re.match(r'<(?:%.|[^>])+>', self.upper or ''):
-                self.regex = True
+                self.is_regex = True
             else:
-                self.regex = False
+                self.is_regex = False
                 self.upper = unescape(self.upper or '') or None
             self.lower = unescape(self.lower or '') or None
             assert self.lower is None or self.lower.startswith(':')
@@ -40,7 +56,7 @@ class Entry:
                               category=SyntaxWarning)
         else:
             self.is_entry = False
-            self.regex = False
+            self.is_regex = False
             self.upper, self.lower, self.cc, self.gloss = [None] * 4
             self.comment = line
             if re.match(r'\s*(?:!)?', line):
@@ -63,11 +79,11 @@ class Entry:
 
     def __str__(self):
         if self.cc:
-            return (f'{escape(self.upper or "") if not self.regex else self.upper}'  # noqa: E501
-                    f'{":" if self.lower else ""}'
+            return (f'{escape(self.upper or "") if not self.is_regex else self.upper}'  # noqa: E501
+                    # f'{":" if self.lower else ""}'
                     f'{escape(self.lower)[1:]}'
-                    f'{" " if self.cc else ""}'
-                    f'{self.cc.id}'  # TODO escape() this?
+                    f'{" " if self.upper or self.lower else ""}'
+                    f'{self.cc.id if hasattr(self.cc, "id") else self.cc}'  # TODO escape() this?  # noqa: E501
                     f'''{' "' if self.gloss else ''}'''
                     f'{self.gloss or ""}'  # TODO escape() this?
                     f'''{'"' if self.gloss else ''}'''
@@ -123,7 +139,6 @@ class Entry:
                       )                              # close entry
                       (?: ( \s*!.*? ) | () ) \s* $   # capture comment
                       '''
-
 
         parsed = re.match(all_re, line, re.X)
         if parsed:

@@ -9,12 +9,16 @@ Line = namedtuple('Line', ['symbols', 'comment'])
 
 
 class MulticharSymbols:
+    __slots__ = ['lines', 'symbols']
+    lines: List[Line]
+    symbols: List[str]
+
     def __init__(self, multichar_str: str):
-        self.symbols: List[str] = []
+        self.symbols = []
         self.lines = []
         lines = multichar_str.split('\n')
         for line in lines:
-            res = re.search(r'(?:\s*Multichar_Symbols)?\s*((?:%.|[^!])+)?(!.*)?',
+            res = re.search(r'(?:\s*Multichar_Symbols)?\s*((?:%.|[^!])+)?(!.*)?',  # noqa: E501
                             line)
             if res is not None:
                 symbols_str, comment = res.groups(default='')
