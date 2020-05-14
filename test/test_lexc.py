@@ -1,5 +1,4 @@
 import os
-import sys
 
 import lexc_parser as lp
 
@@ -11,7 +10,7 @@ with open(expansion_name) as f:
 
 def test_expansion():
     lexc = lp.Lexc(expansion_str)
-    assert set(lexc.upper_expansions()) == {'Boris', 'Borisovic', 'Borisovna',
-                                            'Bo ris', 'Bo risovic',
-                                            'Bo risovna', 'Vladimir',
-                                            'Vladimirovic', 'Vladimirovna'}
+    assert lexc.upper_expansions() == {'Boris', 'Borisovic', 'Borisovna',
+                                       'Bo ris', 'Bo risovic',
+                                       'Bo risovna', 'Vladimir',
+                                       'Vladimirovic', 'Vladimirovna'}

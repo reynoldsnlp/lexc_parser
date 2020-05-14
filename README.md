@@ -45,6 +45,6 @@ LEXICON reg_verb ;
 lexc = Lexc(src)
 print(sorted(lexc.upper_expansions()))  # extract lemmas
 # ['cat', 'dog', 'talk', 'work']
-print(sorted(lexc.upper_expansions(cc='Nouns')))  # extract lemmas from Nouns
+print(sorted(lexc['Nouns'].upper_expansions()))  # extract lemmas from Nouns
 # ['cat', 'dog']
 ```

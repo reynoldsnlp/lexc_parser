@@ -1,5 +1,9 @@
+from collections import Counter
 import re
+from typing import Iterator
 from typing import List
+from typing import Optional
+from typing import Set
 from typing import TYPE_CHECKING
 
 from .entry import Entry
@@ -11,13 +15,16 @@ NEWLINE = '\n'
 
 
 class Lexicon:
-    __slots__ = ['comment', 'entries', 'id', 'parent_lexc']
+    __slots__ = ['_upper_expansions', 'comment', 'entries', 'id',
+                 'parent_lexc']
+    _upper_expansions: Optional[Set[str]]
     comment: str
     entries: List[Entry]
     id: str
     parent_lexc: 'Lexc'
 
     def __init__(self, lex: str, parent_lexc=None):
+        self._upper_expansions = None
         self.parent_lexc = parent_lexc
         lines = lex.split('\n')
         first_line = re.search(r'LEXICON[ \t]+((?:%.|[^ \t!])+)[ \t]*(.*)$',
@@ -25,10 +32,10 @@ class Lexicon:
         self.id, self.comment = first_line.groups(default='')  # type: ignore
         self.entries = [Entry(line, parent_lexicon=self) for line in lines[1:]]
 
-    def __getitem__(self, i):
+    def __getitem__(self, i) -> Entry:
         return self.entries[i]
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Entry]:
         return (e for e in self.entries)
 
     def __repr__(self):
@@ -37,3 +44,28 @@ class Lexicon:
     def __str__(self):
         str_entries = [str(e) for e in self.entries]
         return f'LEXICON {self.id}{NEWLINE}{NEWLINE.join(str_entries)}'
+
+    def upper_expansions(self, suffixes=None, tag_delim='+', cc_history=None,
+                         max_cycles=0) -> Set[str]:
+        """Expand all uppers in `cc` according to subsequent
+        continuation classes. Especially useful for extracting lemmas.
+        """
+        if cc_history is None:
+            cc_history = Counter()
+        cc_history.update([self.id])
+        if self._upper_expansions is not None:
+            return self._upper_expansions
+        else:
+            suffixes = {''}
+            self._upper_expansions = set()
+            for each_entry in self:
+                if each_entry.cc:
+                    if (each_entry.cc.id not in cc_history
+                            or cc_history[each_entry.cc.id] < max_cycles):
+                        x = each_entry.upper_expansions(suffixes=suffixes,
+                                                        tag_delim=tag_delim,
+                                                        # new instance of cc_history  # noqa: E501
+                                                        cc_history=Counter(cc_history),  # noqa: E501
+                                                        max_cycles=max_cycles)
+                        self._upper_expansions.update(x)
+            return self._upper_expansions

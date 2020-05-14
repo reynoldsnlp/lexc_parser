@@ -1,5 +1,8 @@
+from collections import Counter
 import re
-from typing import Union
+from typing import List
+from typing import Optional
+from typing import Set
 from typing import TYPE_CHECKING
 import warnings
 
@@ -13,9 +16,9 @@ __all__ = ['Entry']
 
 
 class Entry:
-    __slots__ = ['cc', 'comment', 'gloss', 'is_comment', 'is_entry',
+    __slots__ = ['_cc', 'comment', 'gloss', 'is_comment', 'is_entry',
                  'is_regex', 'lower', 'parent_lexc', 'parent_lexicon', 'upper']
-    cc: 'Union[str, Lexicon]'
+    _cc: str
     comment: str
     gloss: str
     is_comment: bool
@@ -30,7 +33,7 @@ class Entry:
         if parsed:
             self.is_entry = True
             self.is_comment = False
-            self.upper, self.lower, self.cc, self.gloss, self.comment = parsed
+            self.upper, self.lower, self._cc, self.gloss, self.comment = parsed
             if re.match(r'<(?:%.|[^>])+>', self.upper or ''):
                 self.is_regex = True
             else:
@@ -39,14 +42,14 @@ class Entry:
             self.lower = unescape(self.lower or '') or None
             assert self.lower is None or self.lower.startswith(':')
             assert (  # non-entry
-                    not any([self.upper, self.lower, self.cc])
+                    not any([self.upper, self.lower, self._cc])
                       # upper:lower cc ;
-                    or self.upper and self.lower and self.cc
+                    or self.upper and self.lower and self._cc
                       # upper cc ;  OR  < r e g e x > cc ;
-                    or self.upper and not self.lower and self.cc
+                    or self.upper and not self.lower and self._cc
                       # cc ;
-                    or not self.upper and not self.lower and self.cc), f'bad entry: {line!r}'  # noqa: E501
-            if self.cc and self.cc.isspace():
+                    or not self.upper and not self.lower and self._cc), f'bad entry: {line!r}'  # noqa: E501
+            if self._cc and self._cc.isspace():
                 warnings.warn(f'bad cont class: {line!r}',
                               category=SyntaxWarning)
             if re.match(r'\s*$', self.comment or ''):
@@ -57,7 +60,7 @@ class Entry:
         else:
             self.is_entry = False
             self.is_regex = False
-            self.upper, self.lower, self.cc, self.gloss = [None] * 4
+            self.upper, self.lower, self._cc, self.gloss = [None] * 4
             self.comment = line
             if re.match(r'\s*(?:!)?', line):
                 self.is_comment = True
@@ -71,6 +74,10 @@ class Entry:
         else:
             self.parent_lexc = None
 
+    @property
+    def cc(self) -> 'Lexicon':
+        return self.parent_lexc[self._cc]
+
     def __repr__(self):
         try:
             return f'Entry(upper={self.upper}, lower={self.lower}, cc={self.cc.id}, gloss={self.gloss}, comment={self.comment})'  # noqa: E501
@@ -78,22 +85,22 @@ class Entry:
             return repr(self.__dict__)
 
     def __str__(self):
-        if self.cc:
+        if self._cc is not None:
             return (f'{escape(self.upper or "") if not self.is_regex else self.upper}'  # noqa: E501
                     # f'{":" if self.lower else ""}'
                     f'{escape(self.lower)[1:]}'
                     f'{" " if self.upper or self.lower else ""}'
-                    f'{self.cc.id if hasattr(self.cc, "id") else self.cc}'  # TODO escape() this?  # noqa: E501
+                    f'{self._cc}'  # TODO escape() this?
                     f'''{' "' if self.gloss else ''}'''
                     f'{self.gloss or ""}'  # TODO escape() this?
                     f'''{'"' if self.gloss else ''}'''
-                    f'{" ;" if self.cc else ""}'
+                    f'{" ;" if self._cc else ""}'
                     f'{self.comment or ""}')
         else:
             return self.comment or ''
 
     @staticmethod
-    def _parse_entry(line):
+    def _parse_entry(line) -> Optional[List[Optional[str]]]:
         upper_lower_re = r'''(?:                         # open full-spec data
                              ( (?: %. | [^:!] )+ )       # capture upper
                              ( : (?: %. | [^ \t!] )* )   # capture lower
@@ -147,7 +154,23 @@ class Entry:
         else:
             return None
 
-    def expand_upper(self, tag_delim='+'):
-        """Follow all continuation classes to build complete lemma."""
-        return [f'{self.upper}{suffix}'
-                for suffix in self.parent_lexc.upper_expansions(self.cc)]
+    def upper_expansions(self, suffixes=None, tag_delim='+', cc_history=None,
+                         max_cycles=0) -> Set[str]:
+        """Expand self.upper according to subsequent continuation classes.
+        Especially useful for extracting lemmas.
+        """
+        if self.upper is None:
+            upper = ''
+        else:
+            upper = self.upper.split(tag_delim)[0]
+        suffixes = {f'{lem}{upper}' for lem in suffixes}
+        if self.cc.id == '#' or (self.upper is not None
+                                 and tag_delim in self.upper):
+            return suffixes
+        else:
+            expansions = self.cc.upper_expansions(tag_delim=tag_delim,
+                                                  # new instance of cc_history
+                                                  cc_history=Counter(cc_history),  # noqa: E501
+                                                  max_cycles=max_cycles)
+            return {f'{lem}{suffix}' for lem in suffixes
+                    for suffix in expansions}
