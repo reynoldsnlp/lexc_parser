@@ -1,10 +1,13 @@
-from collections import Counter
+from collections import defaultdict
 import re
+from typing import Counter
+from typing import Dict
 from typing import Iterator
 from typing import List
 from typing import Optional
 from typing import Set
 from typing import TYPE_CHECKING
+from warnings import warn
 
 from .entry import Entry
 if TYPE_CHECKING:
@@ -15,8 +18,9 @@ NEWLINE = '\n'
 
 
 class Lexicon:
-    __slots__ = ['_upper_expansions', 'comment', 'entries', 'id',
-                 'parent_lexc']
+    __slots__ = ['_cc_lemmas_dict', '_upper_expansions', 'comment', 'entries',
+                 'id', 'parent_lexc']
+    _cc_lemmas_dict: Optional[Dict[str, Set[str]]]
     _upper_expansions: Optional[Set[str]]
     comment: str
     entries: List[Entry]
@@ -24,6 +28,7 @@ class Lexicon:
     parent_lexc: 'Lexc'
 
     def __init__(self, lex: str, parent_lexc=None):
+        self._cc_lemmas_dict = None
         self._upper_expansions = None
         self.parent_lexc = parent_lexc
         lines = lex.split('\n')
@@ -45,7 +50,9 @@ class Lexicon:
         str_entries = [str(e) for e in self.entries]
         return f'LEXICON {self.id}{NEWLINE}{NEWLINE.join(str_entries)}'
 
-    def upper_expansions(self, suffixes=None, tag_delim='+', cc_history=None,
+    def upper_expansions(self,
+                         tag_delim='+',
+                         cc_history: Optional[Counter[str]] = None,
                          max_cycles=0) -> Set[str]:
         """Expand all uppers in `cc` according to subsequent
         continuation classes. Especially useful for extracting lemmas.
@@ -56,10 +63,10 @@ class Lexicon:
         if self._upper_expansions is not None:
             return self._upper_expansions
         else:
-            suffixes = {''}
+            suffixes: Set[str] = set()
             self._upper_expansions = set()
             for each_entry in self:
-                if each_entry.cc:
+                if each_entry.cc is not None:
                     if (each_entry.cc.id not in cc_history
                             or cc_history[each_entry.cc.id] < max_cycles):
                         x = each_entry.upper_expansions(suffixes=suffixes,
@@ -69,3 +76,23 @@ class Lexicon:
                                                         max_cycles=max_cycles)
                         self._upper_expansions.update(x)
             return self._upper_expansions
+
+    @property
+    def cc_lemmas_dict(self) -> Dict[str, Set[str]]:
+        """Dictionary showing all the lemmas that use the same continuation
+        class.
+        """
+        if self._cc_lemmas_dict is not None:
+            return self._cc_lemmas_dict
+        self._cc_lemmas_dict = defaultdict(set)
+        for entry in self:
+            assert isinstance(entry, Entry)
+            if entry.cc is not None:
+                upp_exp = entry.upper_expansions()
+                for ue in upp_exp:
+                    if ue in self._cc_lemmas_dict[entry.cc.id]:
+                        warn(f'{ue} declared more than once within {self.id}',
+                             stacklevel=2)
+                self._cc_lemmas_dict[entry.cc.id].update(upp_exp)
+        self._cc_lemmas_dict = dict(self._cc_lemmas_dict)
+        return self._cc_lemmas_dict

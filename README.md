@@ -24,13 +24,16 @@ LEXICON Nouns
 cat:cat reg_noun ;
 dog:dog reg_noun ;
 
-LEXICON Verbs
-work:work reg_verb ;
-talk:talk reg_verb ;
-
 LEXICON reg_noun ;
 +Sg: # ;
 +Pl:s # ;
+
+LEXICON Verbs
+work:work reg_verb ;
+tal:tal k_reg_verb ;
+
+LEXICON k_reg_verb
+k:k reg_verb ;
 
 LEXICON reg_verb ;
 +Prs+1p+Sg: # ;
@@ -47,4 +50,8 @@ print(sorted(lexc.upper_expansions()))  # extract lemmas
 # ['cat', 'dog', 'talk', 'work']
 print(sorted(lexc['Nouns'].upper_expansions()))  # extract lemmas from Nouns
 # ['cat', 'dog']
+print(lexc['Verbs'].cc_lemmas_dict)  # dictionary of classes
+# {'reg_verb': {'work'}, 'k_reg_verb': {'talk'}}
+print(lexc['Root'].cc_lemmas_dict)  # dictionary of classes
+# {'Nouns': {'cat', 'dog'}, 'Verbs': {'work', 'talk'}}
 ```

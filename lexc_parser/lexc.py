@@ -7,7 +7,6 @@ from typing import Optional
 from typing import Set
 import warnings
 
-from .entry import Entry
 from .lexicon import Lexicon
 from .multichar import MulticharSymbols
 
@@ -76,14 +75,6 @@ class Lexc:
         """
         cc = self._lex_dict['Root']
         cc_history = Counter(['Root'])
-        return cc.upper_expansions(suffixes=suffixes,
-                                   tag_delim=tag_delim,
+        return cc.upper_expansions(tag_delim=tag_delim,
                                    cc_history=cc_history,
                                    max_cycles=max_cycles)
-
-    def as_dict_cc_lemmas(self) -> Dict[str, Entry]:
-        """Dictionary where keys are continuation class names and values are
-        lists of lemmas that belong to that continuation class.
-        """
-        # TODO
-        pass

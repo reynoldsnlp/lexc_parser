@@ -35,4 +35,4 @@ def test_blocks():
             expected_out = re.sub('^# ?', '', expected_out, flags=re.M).strip()
             with stdoutIO() as s:
                 exec(code, globals())
-            assert s.getvalue().strip() == expected_out
+            assert code and s.getvalue().strip() == expected_out

@@ -10,6 +10,8 @@ with open(expansion_name) as f:
 
 def test_expansion():
     lexc = lp.Lexc(expansion_str)
+    assert lexc['Male'].upper_expansions() == {'', 'ovic', 'ovna'}
+    assert lexc['Pat'].entries[0].upper_expansions() == {'ic'}
     assert lexc.upper_expansions() == {'Boris', 'Borisovic', 'Borisovna',
                                        'Bo ris', 'Bo risovic',
                                        'Bo risovna', 'Vladimir',

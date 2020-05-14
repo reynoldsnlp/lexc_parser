@@ -1,5 +1,6 @@
 from collections import Counter
 import re
+from typing import Dict
 from typing import List
 from typing import Optional
 from typing import Set
@@ -154,18 +155,23 @@ class Entry:
         else:
             return None
 
-    def upper_expansions(self, suffixes=None, tag_delim='+', cc_history=None,
-                         max_cycles=0) -> Set[str]:
+    def upper_expansions(self,
+                         suffixes: Optional[Set[str]] = None,
+                         tag_delim: str = '+',
+                         cc_history: Optional[Dict[str, int]] = None,
+                         max_cycles: int = 0) -> Set[str]:
         """Expand self.upper according to subsequent continuation classes.
         Especially useful for extracting lemmas.
         """
+        if suffixes is None:
+            suffixes = set()
         if self.upper is None:
             upper = ''
         else:
             upper = self.upper.split(tag_delim)[0]
-        suffixes = {f'{lem}{upper}' for lem in suffixes}
-        if self.cc.id == '#' or (self.upper is not None
-                                 and tag_delim in self.upper):
+        suffixes = {f'{lem}{upper}' for lem in suffixes}.union({upper})
+        if self.cc is None or self.cc.id == '#' or (self.upper is not None
+                                                    and tag_delim in self.upper):  # noqa: E501
             return suffixes
         else:
             expansions = self.cc.upper_expansions(tag_delim=tag_delim,
