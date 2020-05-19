@@ -78,21 +78,25 @@ class Lexicon:
             return self._upper_expansions
 
     @property
-    def cc_lemmas_dict(self) -> Dict[str, Set[str]]:
+    def cc_lemmas_dict(self, tag_delim='+',
+                       max_cycles=0) -> Dict[str, Set[str]]:
         """Dictionary showing all the lemmas that use the same continuation
         class.
         """
         if self._cc_lemmas_dict is not None:
             return self._cc_lemmas_dict
         self._cc_lemmas_dict = defaultdict(set)
+        dups = set()
         for entry in self:
-            assert isinstance(entry, Entry)
             if entry.cc is not None:
-                upp_exp = entry.upper_expansions()
+                upp_exp = entry.upper_expansions(tag_delim=tag_delim,
+                                                 max_cycles=max_cycles)
                 for ue in upp_exp:
                     if ue in self._cc_lemmas_dict[entry.cc.id]:
-                        warn(f'{ue} declared more than once within {self.id}',
-                             stacklevel=2)
+                        dups.add(ue)
                 self._cc_lemmas_dict[entry.cc.id].update(upp_exp)
+        if dups:
+            warn(f'Lemmas declared more than once within {self.id}:\n{dups}',
+                 stacklevel=2)
         self._cc_lemmas_dict = dict(self._cc_lemmas_dict)
         return self._cc_lemmas_dict
