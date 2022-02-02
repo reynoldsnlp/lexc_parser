@@ -51,8 +51,8 @@ print(sorted(lexc.upper_expansions()))  # extract lemmas
 # ['cat', 'dog', 'talk', 'work']
 print(sorted(lexc['Nouns'].upper_expansions()))  # extract lemmas from Nouns
 # ['cat', 'dog']
-print(lexc['Verbs'].cc_lemmas_dict)  # dictionary of classes
-# {'reg_verb': {'work'}, 'k_reg_verb': {'talk'}}
-print(lexc['Root'].cc_lemmas_dict)  # dictionary of classes
-# {'Nouns': {'cat', 'dog'}, 'Verbs': {'work', 'talk'}}
+print(lexc['Verbs'].cc_lemmas_dict == {'reg_verb': {'work'}, 'k_reg_verb': {'talk'}})  # dictionary of classes
+# True
+print(lexc['Root'].cc_lemmas_dict == {'Nouns': {'cat', 'dog'}, 'Verbs': {'work', 'talk'}})  # dictionary of classes
+# True
 ```

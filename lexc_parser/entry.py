@@ -7,6 +7,7 @@ from typing import Set
 from typing import TYPE_CHECKING
 import warnings
 
+from .comment import Comment
 from .misc import escape
 from .misc import unescape
 
@@ -48,8 +49,10 @@ class Entry:
                     or self.upper and self.lower and self._cc
                       # upper cc ;  OR  < r e g e x > cc ;
                     or self.upper and not self.lower and self._cc
+                      # :lower cc ;
+                    or not self.upper and self.lower and self._cc
                       # cc ;
-                    or not self.upper and not self.lower and self._cc), f'bad entry: {line!r}'  # noqa: E501
+                    or not self.upper and not self.lower and self._cc), f'bad entry: {line!r} parsed as ({self.upper}, {self.lower}, {self._cc})'  # noqa: E501
             if self._cc and self._cc.isspace():
                 warnings.warn(f'bad cont class: {line!r}',
                               category=SyntaxWarning)
@@ -58,16 +61,19 @@ class Entry:
             elif not re.match(r'\s*!', self.comment):
                 warnings.warn(f'bad postmatter: {line!r} {self.comment!r}',
                               category=SyntaxWarning)
+            else:
+                self.comment = Comment(self.comment)
         else:
             self.is_entry = False
             self.is_regex = False
             self.upper, self.lower, self._cc, self.gloss = [None] * 4
-            self.comment = line
-            if re.match(r'\s*(?:!)?', line):
+            if re.match(r'\s*!', line):
                 self.is_comment = True
+                self.comment = Comment(line)
             else:
                 self.is_comment = False
-                warnings.warn(f'bad line: {self.comment}',
+                self.comment = line
+                warnings.warn(f'bad line: {self.comment!r}',
                               category=SyntaxWarning)
         self.parent_lexicon = parent_lexicon
         if parent_lexicon is not None:
@@ -103,7 +109,7 @@ class Entry:
     @staticmethod
     def _parse_entry(line) -> Optional[List[Optional[str]]]:
         upper_lower_re = r'''(?:                         # open full-spec data
-                             ( (?: %. | [^:!] )+ )       # capture upper
+                             ( (?: %. | [^:!] )* )       # capture upper
                              ( : (?: %. | [^ \t!] )* )   # capture lower
                              [ \t]+                      # space delimiter(s)
                              )                           # close full-spec data
@@ -116,7 +122,6 @@ class Entry:
                        )                           # close simple data
                        '''
         data_re = fr'''(?:                          # open data
-                          [ \t]*                    # leading whitespace?
                           {upper_lower_re}          # upper:lower
                           |                         # OR
                           {upper_re}                # upper
@@ -138,6 +143,7 @@ class Entry:
                       )?                          # close optnl gloss sttment
                       '''
         all_re = fr'''(?:                            # open entry
+                         \s*                         # leading whitespace?
                          {data_re}                   # (upper(:lower))
                       (?:                            # open final
                          (?: {cc_re} {gloss_re} ; )  # open cc statement

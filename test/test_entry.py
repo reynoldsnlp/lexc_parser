@@ -1,37 +1,42 @@
 import lexc_parser as lp
 
 
+entries = [('a:b\t   c         ;\n', ['a', ':b', 'c', None, None]),
+           ('a:b\t c ;\n', ['a', ':b', 'c', None, None]),
+           ('a:b\t c ;', ['a', ':b', 'c', None, None]),
+           ('a%::b   c "d"     ;\n', ['a%:', ':b', 'c', 'd', None]),
+           ('a%::b c "d" ;\n', ['a%:', ':b', 'c', 'd', None]),
+           ('a%::b c "d" ;', ['a%:', ':b', 'c', 'd', None]),
+           ('a%%:b   c         ;\n', ['a%%', ':b', 'c', None, None]),
+           ('a%%:b c ;\n', ['a%%', ':b', 'c', None, None]),
+           ('a%%:b c ;', ['a%%', ':b', 'c', None, None]),
+           ('a%%%::b c "d"     ;\n', ['a%%%:', ':b', 'c', 'd', None]),
+           ('a%%%::b c "d" ;\n', ['a%%%:', ':b', 'c', 'd', None]),
+           ('a%%%::b c "d" ;', ['a%%%:', ':b', 'c', 'd', None]),
+           ('a       c         ;\n', ['a', None, 'c', None, None]),
+           ('a c ;\n', ['a', None, 'c', None, None]),
+           ('a c ;', ['a', None, 'c', None, None]),
+           ('a       c         ;  ', ['a', None, 'c', None, None]),
+           ('a c ;  ', ['a', None, 'c', None, None]),
+           ('a c ;', ['a', None, 'c', None, None]),
+           ('        c         ;  ', [None, None, 'c', None, None]),
+           ('c ;  ', [None, None, 'c', None, None]),
+           ('c ;', [None, None, 'c', None, None]),
+           ('< a b* c+ (d) > c ;\n', ['< a b* c+ (d) >', None, 'c', None, None]),
+           ('< a b* %> c (d) > c ;\n', ['< a b* %> c (d) >', None, 'c', None, None]),
+           ('ic+Msc:ic ProperNoun ;', ['ic+Msc', ':ic', 'ProperNoun', None, None]),
+           ('na+Fem:na ProperNoun ;', ['na+Fem', ':na', 'ProperNoun', None, None]),
+           ('+N+Prop: # ;', ['+N+Prop', ':', '#', None, None]),
+           (':b c ;', [None, ':b', 'c', None, None]),
+           (':b c ;\t ! comment', [None, ':b', 'c', None, '\t ! comment']),
+           (' :b c ;\t ! comment', [None, ':b', 'c', None, '\t ! comment']),
+           (' a c ;', ['a', None, 'c', None, None]),
+           ]
+
+
 def test_parse_entry():
-    assert lp.Entry._parse_entry('a:b\t   c         ;\n')   == ['a', ':b', 'c', None, None]  # noqa: E221,E501
-    assert lp.Entry._parse_entry('a:b\t c ;\n')             == ['a', ':b', 'c', None, None]  # noqa: E221,E501
-    assert lp.Entry._parse_entry('a:b\t c ;')               == ['a', ':b', 'c', None, None]  # noqa: E221,E501
-    assert lp.Entry._parse_entry('a%::b   c "d"     ;\n')   == ['a%:', ':b', 'c', 'd', None]  # noqa: E221,E501
-    assert lp.Entry._parse_entry('a%::b c "d" ;\n')         == ['a%:', ':b', 'c', 'd', None]  # noqa: E221,E501
-    assert lp.Entry._parse_entry('a%::b c "d" ;')           == ['a%:', ':b', 'c', 'd', None]  # noqa: E221,E501
-    assert lp.Entry._parse_entry('a%%:b   c         ;\n')   == ['a%%', ':b', 'c', None, None]  # noqa: E221,E501
-    assert lp.Entry._parse_entry('a%%:b c ;\n')             == ['a%%', ':b', 'c', None, None]  # noqa: E221,E501
-    assert lp.Entry._parse_entry('a%%:b c ;')               == ['a%%', ':b', 'c', None, None]  # noqa: E221,E501
-    assert lp.Entry._parse_entry('a%%%::b c "d"     ;\n')   == ['a%%%:', ':b', 'c', 'd', None]  # noqa: E221,E501
-    assert lp.Entry._parse_entry('a%%%::b c "d" ;\n')       == ['a%%%:', ':b', 'c', 'd', None]  # noqa: E221,E501
-    assert lp.Entry._parse_entry('a%%%::b c "d" ;')         == ['a%%%:', ':b', 'c', 'd', None]  # noqa: E221,E501
-    assert lp.Entry._parse_entry('a       c         ;\n')   == ['a', None, 'c', None, None]  # noqa: E221,E501
-    assert lp.Entry._parse_entry('a c ;\n')                 == ['a', None, 'c', None, None]  # noqa: E221,E501
-    assert lp.Entry._parse_entry('a c ;')                   == ['a', None, 'c', None, None]  # noqa: E221,E501
-    assert lp.Entry._parse_entry('a       c         ;  ')   == ['a', None, 'c', None, None]  # noqa: E221,E501
-    assert lp.Entry._parse_entry('a c ;  ')                 == ['a', None, 'c', None, None]  # noqa: E221,E501
-    assert lp.Entry._parse_entry('a c ;')                   == ['a', None, 'c', None, None]  # noqa: E221,E501
-    assert lp.Entry._parse_entry('        c         ;  ')   == [None, None, 'c', None, None]  # noqa: E221,E501
-    assert lp.Entry._parse_entry('c ;  ')                   == [None, None, 'c', None, None]  # noqa: E221,E501
-    assert lp.Entry._parse_entry('c ;')                     == [None, None, 'c', None, None]  # noqa: E221,E501
-    assert lp.Entry._parse_entry('< a b* c+ (d) > c ;\n')   == ['< a b* c+ (d) >', None, 'c', None, None]  # noqa: E221,E501
-    assert lp.Entry._parse_entry('< a b* %> c (d) > c ;\n') == ['< a b* %> c (d) >', None, 'c', None, None]  # noqa: E221,E501
-    assert lp.Entry._parse_entry('Boris Male ;')            == ['Boris', None, 'Male', None, None]  # noqa: E221,E501
-    assert lp.Entry._parse_entry('Vladimir Male ;')         == ['Vladimir', None, 'Male', None, None]  # noqa: E221,E501
-    assert lp.Entry._parse_entry('ProperNoun ;')            == [None, None, 'ProperNoun', None, None]  # noqa: E221,E501
-    assert lp.Entry._parse_entry('ov Pat ;')                == ['ov', None, 'Pat', None, None]  # noqa: E221,E501
-    assert lp.Entry._parse_entry('ic+Msc:ic ProperNoun ;')  == ['ic+Msc', ':ic', 'ProperNoun', None, None]  # noqa: E221,E501
-    assert lp.Entry._parse_entry('na+Fem:na ProperNoun ;')  == ['na+Fem', ':na', 'ProperNoun', None, None]  # noqa: E221,E501
-    assert lp.Entry._parse_entry('+N+Prop: # ;')            == ['+N+Prop', ':', '#', None, None]  # noqa: E221,E501
+    for entry, analysis in entries:
+        assert entry and lp.Entry._parse_entry(entry) == analysis
 
 
 def test_str():
@@ -65,3 +70,7 @@ def test_str():
     assert str(lp.Entry('ic+Msc:ic ProperNoun ;')) == 'ic+Msc:ic ProperNoun ;'
     assert str(lp.Entry('na+Fem:na ProperNoun ;')) == 'na+Fem:na ProperNoun ;'
     assert str(lp.Entry('+N+Prop: # ;')) == '+N+Prop: # ;'
+    assert str(lp.Entry(':b c ;')) == ':b c ;'
+    assert str(lp.Entry(':b c ;\t ! comment')) == ':b c ;\t ! comment'
+    assert str(lp.Entry(' :b c ;\t ! comment')) == ':b c ;\t ! comment'
+    assert str(lp.Entry(' a c ; ')) == 'a c ;'
