@@ -22,7 +22,7 @@ class Comment:
     comment: Optional[str]
     reading: Optional[str]
     surface: Optional[str]
-    test: Optional[int]
+    test: Optional[TestType]
 
     def __init__(self, comment_str: str):
         self._comment_str = comment_str

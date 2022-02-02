@@ -2,6 +2,7 @@
 
 __version__ = "0.0.1"
 
+from .comment import *  # noqa: F401,F403
 from .entry import *  # noqa: F401,F403
 from .lexc import *  # noqa: F401,F403
 from .lexicon import *  # noqa: F401,F403

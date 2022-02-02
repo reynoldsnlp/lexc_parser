@@ -18,12 +18,11 @@ __all__ = ['Entry']
 
 
 class Entry:
-    __slots__ = ['_cc', 'comment', 'gloss', 'is_comment', 'is_entry',
-                 'is_regex', 'lower', 'parent_lexc', 'parent_lexicon', 'upper']
+    __slots__ = ['_cc', 'comment', 'gloss', 'is_entry', 'is_regex', 'lower',
+                 'parent_lexicon', 'upper']
     _cc: str
     comment: str
     gloss: str
-    is_comment: bool
     is_entry: bool
     is_regex: bool
     lower: str
@@ -34,7 +33,6 @@ class Entry:
         parsed = self._parse_entry(line)
         if parsed:
             self.is_entry = True
-            self.is_comment = False
             self.upper, self.lower, self._cc, self.gloss, self.comment = parsed
             if re.match(r'<(?:%.|[^>])+>', self.upper or ''):
                 self.is_regex = True
@@ -68,22 +66,16 @@ class Entry:
             self.is_regex = False
             self.upper, self.lower, self._cc, self.gloss = [None] * 4
             if re.match(r'\s*!', line):
-                self.is_comment = True
                 self.comment = Comment(line)
             else:
-                self.is_comment = False
                 self.comment = line
                 warnings.warn(f'bad line: {self.comment!r}',
                               category=SyntaxWarning)
         self.parent_lexicon = parent_lexicon
-        if parent_lexicon is not None:
-            self.parent_lexc = parent_lexicon.parent_lexc
-        else:
-            self.parent_lexc = None
 
     @property
-    def cc(self) -> 'Lexicon':
-        return self.parent_lexc[self._cc]
+    def cc(self) -> Optional['Lexicon']:
+        return self.parent_lexicon.parent_lexc[self._cc]
 
     def __repr__(self):
         try:
