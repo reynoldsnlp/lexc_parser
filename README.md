@@ -56,3 +56,7 @@ print(lexc['Verbs'].cc_lemmas_dict == {'reg_verb': {'work'}, 'k_reg_verb': {'tal
 print(lexc['Root'].cc_lemmas_dict == {'Nouns': {'cat', 'dog'}, 'Verbs': {'work', 'talk'}})  # dictionary of classes
 # True
 ```
+
+## Tests
+
+Run tests by install `tox`, then run `tox` in the root directory.
