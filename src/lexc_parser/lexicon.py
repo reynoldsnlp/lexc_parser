@@ -77,7 +77,6 @@ class Lexicon:
                         self._upper_expansions.update(x)
             return self._upper_expansions
 
-    @property
     def cc_lemmas_dict(self, tag_delim='+',
                        max_cycles=0) -> Dict[str, Set[str]]:
         """Dictionary showing all the lemmas that use the same continuation
